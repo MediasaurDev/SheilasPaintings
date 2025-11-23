@@ -1,0 +1,45 @@
+---
+layout: none
+---
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sheila's Gallery</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
+        .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; }
+        .gallery-item { cursor: pointer; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .gallery-item img { display: block; max-width: 100%; height: auto; }
+        .gallery-item:hover { transform: scale(1.02); transition: 0.2s; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.css">
+</head>
+<body>
+
+    <h1>Sheila's Paintings</h1>
+    
+    <div class="gallery" id="gallery">
+        {% for file in site.static_files %}
+            {% if file.path contains 'assets/thumbs' %}
+                <div class="gallery-item">
+                    <img src="{{ site.baseurl }}{{ file.path }}" 
+                         data-original="{{ site.baseurl }}{{ file.path | replace: 'thumbs', 'images' }}" 
+                         alt="Painting">
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
+    <script>
+        const gallery = document.getElementById('gallery');
+        const viewer = new Viewer(gallery, {
+            url: 'data-original', // Tells it to load the big 15MB file on click
+            toolbar: {
+                zoomIn: 1, zoomOut: 1, reset: 1, 
+                rotateLeft: 1, rotateRight: 1
+            }
+        });
+    </script>
+</body>
+</html>
