@@ -6,7 +6,7 @@ layout: none
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheila's Portfolio</title>
+    <title>Sheila's Paintings</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@ layout: none
             --button-text: #ffffff;
             
             /* Dark Mode Frame colors */
-            --frame-color: #2a2a2a;
+            --frame-color: #444444; 
             --frame-shadow: rgba(0,0,0,0.5);
         }
 
@@ -102,13 +102,12 @@ layout: none
             border-radius: 2px;
         }
 
-        /* THIS IS THE CLASS THAT MAKES IT LOOK LIKE A FRAME */
         .framed-look img {
             border: 8px solid var(--frame-color);
             outline: 1px solid rgba(0,0,0,0.1);
             box-shadow: 
-                0 10px 20px var(--frame-shadow), /* Drop Shadow */
-                inset 0 0 20px rgba(0,0,0,0.2); /* Inner Depth */
+                0 10px 20px var(--frame-shadow), 
+                inset 0 0 20px rgba(0,0,0,0.2); 
         }
 
         .gallery-item:hover img {
@@ -117,16 +116,24 @@ layout: none
             box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         }
 
-        /* --- UTILS --- */
-        .theme-toggle {
+        /* --- BUTTONS --- */
+        .control-btn {
             position: absolute;
-            top: 20px; right: 20px;
+            top: 20px;
             background: var(--button-bg);
             color: var(--button-text);
             border: none; padding: 10px 15px;
             border-radius: 20px; cursor: pointer;
             font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+            z-index: 100;
         }
+        .control-btn:hover { opacity: 0.8; }
+
+        .btn-theme { right: 20px; } 
+        .btn-sort { left: 20px; }   
         
         .viewer-backdrop {
             background-color: rgba(0, 0, 0, 0.85) !important;
@@ -137,7 +144,8 @@ layout: none
 </head>
 <body>
 
-    <button class="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
+    <button class="control-btn btn-sort" onclick="reverseGrid()">Order &darr;</button>
+    <button class="control-btn btn-theme" onclick="toggleTheme()">Dark Mode</button>
 
     <h1>Sheila's Paintings</h1>
     <p class="subtext">Click any painting to enlarge and view details</p>
@@ -167,10 +175,36 @@ layout: none
             transition: false
         });
 
+        // --- SORT LOGIC ---
+        function reverseGrid() {
+            const container = document.getElementById('gallery');
+            const btn = document.querySelector('.btn-sort');
+            
+            // 1. Reverse Items
+            const items = Array.from(container.children);
+            items.reverse();
+            
+            // 2. Update Arrow Symbol
+            if (btn.innerHTML.includes('↓')) {
+                btn.innerHTML = "Order &uarr;"; // Switch to Up Arrow
+            } else {
+                btn.innerHTML = "Order &darr;"; // Switch to Down Arrow
+            }
+
+            // 3. Re-render
+            container.innerHTML = '';
+            items.forEach(item => container.appendChild(item));
+            
+            // 4. Update Viewer
+            viewer.update();
+        }
+
+        // --- DARK MODE LOGIC ---
         function toggleTheme() {
             const body = document.body;
-            const btn = document.querySelector('.theme-toggle');
+            const btn = document.querySelector('.btn-theme');
             body.classList.toggle('dark-mode');
+            
             if (body.classList.contains('dark-mode')) {
                 btn.textContent = "Light Mode";
                 localStorage.setItem('theme', 'dark');
@@ -182,7 +216,7 @@ layout: none
 
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
-            document.querySelector('.theme-toggle').textContent = "Light Mode";
+            document.querySelector('.btn-theme').textContent = "Light Mode";
         }
     </script>
 </body>
