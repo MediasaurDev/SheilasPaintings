@@ -24,7 +24,7 @@ layout: none
             --button-bg: #f0f0f0;
             --button-text: #000000;
             
-            /* Frame Colors (For the bonus feature) */
+            /* Frame Colors */
             --frame-color: #e8dcd1; 
             --frame-shadow: rgba(0,0,0,0.2);
         }
@@ -76,7 +76,7 @@ layout: none
         /* --- MASONRY GRID --- */
         .gallery {
             column-count: 5; 
-            column-gap: 20px; /* Increased gap slightly for frames */
+            column-gap: 20px;
             max-width: 1600px;
             margin: 0 auto;
         }
@@ -92,23 +92,20 @@ layout: none
             transition: transform 0.3s ease;
         }
 
-        /* --- THE PICTURE FRAME STYLE (Enabled by class 'framed') --- */
+        /* --- PICTURE FRAME STYLE --- */
         .gallery-item img {
             width: 100%;
             height: auto;
             display: block;
             opacity: 0.9;
             transition: opacity 0.3s;
-            
-            /* BASIC SHADOW (Default) */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            border-radius: 2px; 
+            border-radius: 2px;
         }
 
-        /* If you uncomment the class below, this style activates */
+        /* THIS IS THE CLASS THAT MAKES IT LOOK LIKE A FRAME */
         .framed-look img {
             border: 8px solid var(--frame-color);
-            outline: 1px solid rgba(0,0,0,0.1); /* Inner definition */
+            outline: 1px solid rgba(0,0,0,0.1);
             box-shadow: 
                 0 10px 20px var(--frame-shadow), /* Drop Shadow */
                 inset 0 0 20px rgba(0,0,0,0.2); /* Inner Depth */
@@ -146,15 +143,17 @@ layout: none
     <p class="subtext">Click any painting to enlarge and view details</p>
     
     <div class="gallery" id="gallery">
-        {% for file in site.static_files %}
-            {% if file.path contains 'assets/images' %}
-                <div class="gallery-item"> <img 
-                        src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
-                        data-original="{{ site.baseurl }}{{ file.path }}" 
-                        alt="Painting"
-                        loading="lazy"
-                        onerror="this.style.display='none'"> </div>
-            {% endif %}
+        {% assign image_files = site.static_files | where_exp: "item", "item.path contains 'assets/images'" | sort: 'name' | reverse %}
+        
+        {% for file in image_files %}
+            <div class="gallery-item framed-look"> 
+                <img 
+                    src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
+                    data-original="{{ site.baseurl }}{{ file.path }}" 
+                    alt="Painting"
+                    loading="lazy"
+                    onerror="this.style.display='none'"> 
+            </div>
         {% endfor %}
     </div>
 
