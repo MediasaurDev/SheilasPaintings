@@ -145,21 +145,21 @@ layout: none
     <p class="subtext" style="font-size: 0.85rem; opacity: 0.8;">Use the button in the top-left to switch between paintings and photos of Sheila</p>
     
     <div class="gallery" id="gallery-paintings">
-        {% assign painting_files = site.static_files | where_exp: "item", "item.path contains 'assets/images'" | sort: 'name' | reverse %}
+        {% assign painting_files = site.static_files | where_exp: "item", "item.path contains 'assets/images/paintings'" | sort: 'name' | reverse %}
         {% for file in painting_files %}
             <div class="gallery-item framed-look"> 
                 <img src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
                      data-original="{{ site.baseurl }}{{ file.path }}" 
-                     alt="Painting" loading="lazy" onerror="this.style.display='none'"> 
+                     alt="Painting" loading="lazy"> 
             </div>
         {% endfor %}
     </div>
 
     <div class="gallery hidden" id="gallery-photos">
-        {% assign photo_files = site.static_files | where_exp: "item", "item.path contains 'assets/photos'" | sort: 'name' | reverse %}
+        {% assign photo_files = site.static_files | where_exp: "item", "item.path contains 'assets/images/sheila'" | sort: 'name' | reverse %}
         {% for file in photo_files %}
             <div class="gallery-item"> 
-                <img src="{{ site.baseurl }}{{ file.path }}" 
+                <img src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
                      data-original="{{ site.baseurl }}{{ file.path }}" 
                      alt="Photo of Sheila" loading="lazy"> 
             </div>
@@ -208,7 +208,6 @@ layout: none
         }
 
         function reverseGrid() {
-            // Reverses whichever gallery is currently visible
             const visibleGallery = document.getElementById('gallery-photos').classList.contains('hidden') 
                 ? document.getElementById('gallery-paintings') 
                 : document.getElementById('gallery-photos');
@@ -226,13 +225,8 @@ layout: none
             const body = document.body;
             const btn = document.querySelector('.btn-theme');
             body.classList.toggle('dark-mode');
-            if (body.classList.contains('dark-mode')) {
-                btn.textContent = "Light Mode";
-                localStorage.setItem('theme', 'dark');
-            } else {
-                btn.textContent = "Dark Mode";
-                localStorage.setItem('theme', 'light');
-            }
+            btn.textContent = body.classList.contains('dark-mode') ? "Light Mode" : "Dark Mode";
+            localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
 
         if (localStorage.getItem('theme') === 'dark') {
