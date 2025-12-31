@@ -6,7 +6,7 @@ layout: none
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheila's Portfolio</title>
+    <title>Sheila's Paintings</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,6 @@ layout: none
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.css">
 
     <style>
-        /* --- VARIABLES --- */
         :root {
             --bg-color: #ffffff;
             --text-gradient-start: #000000;
@@ -23,8 +22,6 @@ layout: none
             --subtext-color: #666666;
             --button-bg: #f0f0f0;
             --button-text: #000000;
-            
-            /* Frame Colors (For the bonus feature) */
             --frame-color: #e8dcd1; 
             --frame-shadow: rgba(0,0,0,0.2);
         }
@@ -36,13 +33,10 @@ layout: none
             --subtext-color: #aaaaaa;
             --button-bg: #333333;
             --button-text: #ffffff;
-            
-            /* Dark Mode Frame colors */
-            --frame-color: #2a2a2a;
+            --frame-color: #444444; 
             --frame-shadow: rgba(0,0,0,0.5);
         }
 
-        /* --- LAYOUT --- */
         html { scroll-behavior: smooth; }
         
         body {
@@ -70,15 +64,14 @@ layout: none
             color: var(--subtext-color);
             font-size: 1rem;
             font-weight: 300;
-            margin-bottom: 50px;
+            margin: 5px 0;
         }
 
-        /* --- MASONRY GRID --- */
         .gallery {
             column-count: 5; 
-            column-gap: 20px; /* Increased gap slightly for frames */
+            column-gap: 20px;
             max-width: 1600px;
-            margin: 0 auto;
+            margin: 30px auto;
         }
 
         @media (max-width: 1000px) { .gallery { column-count: 3; } }
@@ -92,26 +85,19 @@ layout: none
             transition: transform 0.3s ease;
         }
 
-        /* --- THE PICTURE FRAME STYLE (Enabled by class 'framed') --- */
         .gallery-item img {
             width: 100%;
             height: auto;
             display: block;
             opacity: 0.9;
             transition: opacity 0.3s;
-            
-            /* BASIC SHADOW (Default) */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            border-radius: 2px; 
+            border-radius: 2px;
         }
 
-        /* If you uncomment the class below, this style activates */
         .framed-look img {
             border: 8px solid var(--frame-color);
-            outline: 1px solid rgba(0,0,0,0.1); /* Inner definition */
-            box-shadow: 
-                0 10px 20px var(--frame-shadow), /* Drop Shadow */
-                inset 0 0 20px rgba(0,0,0,0.2); /* Inner Depth */
+            outline: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px var(--frame-shadow), inset 0 0 20px rgba(0,0,0,0.2); 
         }
 
         .gallery-item:hover img {
@@ -120,16 +106,26 @@ layout: none
             box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         }
 
-        /* --- UTILS --- */
-        .theme-toggle {
+        .control-btn {
             position: absolute;
-            top: 20px; right: 20px;
+            top: 20px;
             background: var(--button-bg);
             color: var(--button-text);
             border: none; padding: 10px 15px;
             border-radius: 20px; cursor: pointer;
             font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+            z-index: 100;
         }
+        .control-btn:hover { opacity: 0.8; }
+
+        .btn-theme { right: 20px; } 
+        .btn-sort { left: 20px; }   
+        .btn-toggle-view { left: 110px; } 
+
+        .hidden { display: none; }
         
         .viewer-backdrop {
             background-color: rgba(0, 0, 0, 0.85) !important;
@@ -140,37 +136,95 @@ layout: none
 </head>
 <body>
 
-    <button class="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
+    <button class="control-btn btn-sort" onclick="reverseGrid()">Order &darr;</button>
+    <button class="control-btn btn-toggle-view" onclick="toggleView()">Photos of Sheila &#128247;</button>
+    <button class="control-btn btn-theme" onclick="toggleTheme()">Dark Mode</button>
 
-    <h1>Sheila's Paintings</h1>
-    <p class="subtext">Click any painting to enlarge and view details</p>
+    <h1 id="main-title">Sheila's Paintings</h1>
+    <p class="subtext" id="view-tooltip">Click any painting to enlarge and view details</p>
+    <p class="subtext" style="font-size: 0.85rem; opacity: 0.8;">Use the button in the top-left to switch between paintings and photos of Sheila</p>
     
-    <div class="gallery" id="gallery">
-        {% for file in site.static_files %}
-            {% if file.path contains 'assets/images' %}
-                <div class="gallery-item"> <img 
-                        src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
-                        data-original="{{ site.baseurl }}{{ file.path }}" 
-                        alt="Painting"
-                        loading="lazy"
-                        onerror="this.style.display='none'"> </div>
-            {% endif %}
+    <div class="gallery" id="gallery-paintings">
+        {% assign painting_files = site.static_files | where_exp: "item", "item.path contains 'assets/images'" | sort: 'name' | reverse %}
+        {% for file in painting_files %}
+            <div class="gallery-item framed-look"> 
+                <img src="{{ site.baseurl }}{{ file.path | replace: 'images', 'thumbs' | replace: file.extname, '.webp' }}" 
+                     data-original="{{ site.baseurl }}{{ file.path }}" 
+                     alt="Painting" loading="lazy" onerror="this.style.display='none'"> 
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="gallery hidden" id="gallery-photos">
+        {% assign photo_files = site.static_files | where_exp: "item", "item.path contains 'assets/photos'" | sort: 'name' | reverse %}
+        {% for file in photo_files %}
+            <div class="gallery-item"> 
+                <img src="{{ site.baseurl }}{{ file.path }}" 
+                     data-original="{{ site.baseurl }}{{ file.path }}" 
+                     alt="Photo of Sheila" loading="lazy"> 
+            </div>
         {% endfor %}
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
     <script>
-        const gallery = document.getElementById('gallery');
-        const viewer = new Viewer(gallery, {
-            url: 'data-original',
-            toolbar: { zoomIn: 1, zoomOut: 1, reset: 1, prev: 1, play: 1, next: 1, rotateLeft: 0, rotateRight: 0, flipHorizontal: 0, flipVertical: 0 },
-            title: false,
-            transition: false
-        });
+        let currentViewer;
+
+        function initViewer(id) {
+            if (currentViewer) currentViewer.destroy();
+            const gallery = document.getElementById(id);
+            currentViewer = new Viewer(gallery, {
+                url: 'data-original',
+                toolbar: { zoomIn: 1, zoomOut: 1, reset: 1, prev: 1, play: 1, next: 1, rotateLeft: 0, rotateRight: 0, flipHorizontal: 0, flipVertical: 0 },
+                title: false,
+                transition: false
+            });
+        }
+
+        initViewer('gallery-paintings');
+
+        function toggleView() {
+            const paintings = document.getElementById('gallery-paintings');
+            const photos = document.getElementById('gallery-photos');
+            const btn = document.querySelector('.btn-toggle-view');
+            const title = document.getElementById('main-title');
+            const tooltip = document.getElementById('view-tooltip');
+
+            if (photos.classList.contains('hidden')) {
+                paintings.classList.add('hidden');
+                photos.classList.remove('hidden');
+                btn.innerHTML = "Sheila's Paintings &#127912;";
+                title.innerText = "Photos of Sheila";
+                tooltip.innerText = "Click any photo to enlarge and view details";
+                initViewer('gallery-photos');
+            } else {
+                photos.classList.add('hidden');
+                paintings.classList.remove('hidden');
+                btn.innerHTML = "Photos of Sheila &#128247;";
+                title.innerText = "Sheila's Paintings";
+                tooltip.innerText = "Click any painting to enlarge and view details";
+                initViewer('gallery-paintings');
+            }
+        }
+
+        function reverseGrid() {
+            // Reverses whichever gallery is currently visible
+            const visibleGallery = document.getElementById('gallery-photos').classList.contains('hidden') 
+                ? document.getElementById('gallery-paintings') 
+                : document.getElementById('gallery-photos');
+            
+            const btn = document.querySelector('.btn-sort');
+            const items = Array.from(visibleGallery.children);
+            items.reverse();
+            btn.innerHTML = btn.innerHTML.includes('↓') ? "Order &uarr;" : "Order &darr;";
+            visibleGallery.innerHTML = '';
+            items.forEach(item => visibleGallery.appendChild(item));
+            currentViewer.update();
+        }
 
         function toggleTheme() {
             const body = document.body;
-            const btn = document.querySelector('.theme-toggle');
+            const btn = document.querySelector('.btn-theme');
             body.classList.toggle('dark-mode');
             if (body.classList.contains('dark-mode')) {
                 btn.textContent = "Light Mode";
@@ -183,7 +237,7 @@ layout: none
 
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
-            document.querySelector('.theme-toggle').textContent = "Light Mode";
+            document.querySelector('.btn-theme').textContent = "Light Mode";
         }
     </script>
 </body>
